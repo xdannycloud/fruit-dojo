@@ -407,12 +407,16 @@ export default function App() {
       </header>
 
       <section className="game-card" aria-label="Fruit Dojo game area">
+        <div className="play-counter" data-testid="plays" aria-label="Global games played">
+          <strong>Games Played</strong>
+          <span>{plays}</span>
+        </div>
+
         <div className="hud">
           <div data-testid="score"><strong>Score</strong><span>{hud.score}</span></div>
           <div data-testid="combo"><strong>Combo</strong><span>x{Math.max(1, hud.combo - 1)}</span></div>
           <div data-testid="timer"><strong>Time</strong><span>{hud.timeLeft}s</span></div>
           <div data-testid="lives"><strong>Lives</strong><span>{'❤️'.repeat(hud.lives) || '—'}</span></div>
-          <div data-testid="plays"><strong>Games Played</strong><span>{plays}</span></div>
         </div>
 
         <canvas

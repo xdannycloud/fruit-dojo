@@ -46,6 +46,16 @@ describe('Fruit Dojo', () => {
     expect(global.fetch).toHaveBeenCalledWith('/api/plays');
   });
 
+  it('shows the global games played counter as a top-right badge outside the main HUD', async () => {
+    render(<App />);
+
+    const plays = screen.getByTestId('plays');
+    await waitFor(() => expect(plays).toHaveTextContent('42'));
+
+    expect(plays).toHaveClass('play-counter');
+    expect(plays.closest('.hud')).toBeNull();
+  });
+
   it('increments global games played count through the backend when starting', async () => {
     render(<App />);
 
