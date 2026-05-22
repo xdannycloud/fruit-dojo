@@ -1,63 +1,94 @@
 import React from 'react';
-import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import App from '../App.jsx';
 
-describe('Cursor Agent Pet', () => {
-  it('renders the title', () => {
+describe('Fruit Dojo', () => {
+  it('renders the game title and canvas', () => {
     render(<App />);
+
     expect(
-      screen.getByRole('heading', { name: /cursor agent pet/i })
+      screen.getByRole('heading', { name: /fruit dojo/i })
     ).toBeInTheDocument();
+    expect(screen.getByTestId('slash-canvas')).toBeInTheDocument();
   });
 
-  it('changes mood to excited when the stage is clicked', () => {
+  it('starts the game from the start button', () => {
     render(<App />);
-    const stage = screen.getByTestId('stage');
-    const mood = screen.getByTestId('mood-indicator');
 
-    expect(mood).toHaveTextContent(/idle/i);
+    fireEvent.click(screen.getByRole('button', { name: /start game/i }));
 
-    act(() => {
-      fireEvent.click(stage, { clientX: 200, clientY: 200 });
-    });
-
-    expect(screen.getByTestId('mood-indicator')).toHaveTextContent(/excited/i);
-    expect(screen.getByTestId('pet')).toHaveAttribute('data-mood', 'excited');
+    expect(screen.getByTestId('game-state')).toHaveTextContent(/playing/i);
+    expect(screen.getByRole('button', { name: /restart/i })).toBeInTheDocument();
   });
 
-  it('toggles focus mode and updates the resting mood', () => {
+  it('shows score, combo, timer, and lives HUD', () => {
     render(<App />);
-    const toggle = screen.getByTestId('focus-toggle');
 
-    expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByTestId('mood-indicator')).toHaveTextContent(/idle/i);
-
-    act(() => {
-      fireEvent.click(toggle);
-    });
-
-    expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByTestId('mood-indicator')).toHaveTextContent(/focused/i);
-    expect(toggle).toHaveTextContent(/focus on/i);
-
-    act(() => {
-      fireEvent.click(toggle);
-    });
-
-    expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByTestId('mood-indicator')).toHaveTextContent(/idle/i);
+    expect(screen.getByTestId('score')).toHaveTextContent(/score/i);
+    expect(screen.getByTestId('combo')).toHaveTextContent(/combo/i);
+    expect(screen.getByTestId('timer')).toHaveTextContent(/time/i);
+    expect(screen.getByTestId('lives')).toHaveTextContent(/lives/i);
   });
 
-  it('spawns a thought bubble when the stage is clicked', () => {
-    render(<App />);
-    const stage = screen.getByTestId('stage');
+  it('supports deterministic fruit spawning helper', async () => {
+    const { createFruit } = await import('../lib/gameLogic.js');
+    const fruit = createFruit(0.25, 800, 600);
 
-    act(() => {
-      fireEvent.click(stage, { clientX: 150, clientY: 150 });
-    });
+    expect(fruit.kind).toBe('fruit');
+    // Central 30% on 800px screen: 280px to 520px
+    expect(fruit.x).toBeGreaterThanOrEqual(280);
+    expect(fruit.x).toBeLessThanOrEqual(520);
+    expect(fruit.y).toBeGreaterThan(600);
+    expect(fruit.vy).toBeLessThan(0);
+  });
 
-    const bubbles = document.querySelectorAll('.bubble');
-    expect(bubbles.length).toBeGreaterThan(0);
+  it('spawnRange returns central 30% bounds for any width', async () => {
+    const { spawnRange } = await import('../lib/gameLogic.js');
+
+    // 800px wide screen: 35% margin = 280px each side
+    const r800 = spawnRange(800);
+    expect(r800.margin).toBeCloseTo(280);
+    expect(r800.spawnWidth).toBeCloseTo(240); // 30% of 800
+
+    // 1200px wide screen: 35% margin = 420px each side
+    const r1200 = spawnRange(1200);
+    expect(r1200.margin).toBeCloseTo(420);
+    expect(r1200.spawnWidth).toBeCloseTo(360); // 30% of 1200
+
+    // Minimum clamped width (320px): 35% margin = 112px each side
+    const r320 = spawnRange(320);
+    expect(r320.margin).toBeCloseTo(112);
+    expect(r320.spawnWidth).toBeCloseTo(96); // 30% of 320
+  });
+
+  it('spawns bomb within central 30% area', async () => {
+    const { createBomb } = await import('../lib/gameLogic.js');
+    const bomb = createBomb(0.5, 800, 600);
+
+    expect(bomb.kind).toBe('bomb');
+    expect(bomb.x).toBeGreaterThanOrEqual(280);
+    expect(bomb.x).toBeLessThanOrEqual(520);
+  });
+
+  it('detects slash hits with radius-based collision', async () => {
+    const { slashHitsTarget } = await import('../lib/gameLogic.js');
+    const target = { x: 100, y: 100, radius: 32 };
+    const trail = [
+      { x: 40, y: 100 },
+      { x: 80, y: 100 },
+      { x: 130, y: 100 },
+    ];
+
+    expect(slashHitsTarget(trail, target)).toBe(true);
+    expect(slashHitsTarget([{ x: 10, y: 10 }], target)).toBe(false);
+  });
+
+  it('cancels animation frame on unmount', () => {
+    const cancel = vi.spyOn(window, 'cancelAnimationFrame');
+    const { unmount } = render(<App />);
+    unmount();
+    expect(cancel).toHaveBeenCalled();
+    cancel.mockRestore();
   });
 });

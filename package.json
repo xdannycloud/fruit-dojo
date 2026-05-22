@@ -1,9 +1,9 @@
 {
-  "name": "cursor-agent-pet",
+  "name": "fruit-dojo",
   "private": false,
   "version": "0.1.0",
   "type": "module",
-  "description": "A playful cursor-following coding-agent pet demo built with Claude Code and Codex.",
+  "description": "A playful fruit-slicing browser game with a katana cursor, combos, bombs, and clean AI toy demo polish.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
@@ -13,18 +13,19 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
+    "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest"
+    "vite": "latest"
   },
   "devDependencies": {
-    "vitest": "latest",
-    "@testing-library/react": "latest",
-    "@testing-library/jest-dom": "latest",
-    "jsdom": "latest",
-    "eslint": "latest",
     "@eslint/js": "latest",
-    "globals": "latest"
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "latest",
+    "eslint": "latest",
+    "globals": "latest",
+    "jsdom": "latest",
+    "playwright": "^1.60.0",
+    "vitest": "latest"
   }
 }
