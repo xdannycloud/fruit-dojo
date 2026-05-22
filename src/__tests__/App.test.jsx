@@ -76,6 +76,7 @@ describe('Fruit Dojo', () => {
     expect(screen.getByTestId('score')).toHaveTextContent(/score/i);
     expect(screen.getByTestId('combo')).toHaveTextContent(/combo/i);
     expect(screen.getByTestId('timer')).toHaveTextContent(/time/i);
+    expect(screen.getByTestId('timer')).toHaveTextContent('15s');
     expect(screen.getByTestId('lives')).toHaveTextContent(/lives/i);
     await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
   });
