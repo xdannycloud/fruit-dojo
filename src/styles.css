@@ -255,7 +255,7 @@ h1 {
   position: absolute;
   z-index: 6;
   left: 50%;
-  top: 47%;
+  top: 43%;
   width: clamp(156px, 24vw, 230px);
   aspect-ratio: 1;
   border: 1px solid rgba(255, 255, 255, 0.8);

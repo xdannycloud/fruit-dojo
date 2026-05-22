@@ -1,7 +1,12 @@
 import React from 'react';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import App from '../App.jsx';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 describe('Fruit Dojo', () => {
   beforeEach(() => {
@@ -79,6 +84,13 @@ describe('Fruit Dojo', () => {
     expect(screen.getByTestId('timer')).toHaveTextContent('20s');
     expect(screen.getByTestId('lives')).toHaveTextContent(/lives/i);
     await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
+  });
+
+  it('positions the final score orb slightly above the visual center', () => {
+    const css = readFileSync(resolve(__dirname, '../styles.css'), 'utf8');
+    const rule = css.match(/\.final-score-card\s*{(?<body>[^}]+)}/)?.groups?.body;
+
+    expect(rule).toContain('top: 43%;');
   });
 
   it('shows an animated centered final score panel when the game ends', async () => {
