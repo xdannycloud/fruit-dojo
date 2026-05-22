@@ -76,7 +76,7 @@ describe('Fruit Dojo', () => {
     expect(screen.getByTestId('score')).toHaveTextContent(/score/i);
     expect(screen.getByTestId('combo')).toHaveTextContent(/combo/i);
     expect(screen.getByTestId('timer')).toHaveTextContent(/time/i);
-    expect(screen.getByTestId('timer')).toHaveTextContent('15s');
+    expect(screen.getByTestId('timer')).toHaveTextContent('20s');
     expect(screen.getByTestId('lives')).toHaveTextContent(/lives/i);
     await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
   });
@@ -94,7 +94,7 @@ describe('Fruit Dojo', () => {
     fireEvent.click(screen.getByRole('button', { name: /start game/i }));
 
     act(() => {
-      tick(performance.now() + 16_000);
+      tick(performance.now() + 21_000);
     });
 
     await waitFor(() => expect(screen.getByTestId('game-state')).toHaveTextContent(/game over/i));

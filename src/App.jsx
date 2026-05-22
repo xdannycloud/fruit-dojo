@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createBomb, createFruit, scoreHit, slashHitsTarget } from './lib/gameLogic.js';
 
-const GAME_SECONDS = 15;
+const GAME_SECONDS = 20;
 const MAX_TRAIL = 18;
 const GRAVITY = 0.33;
 const SPAWN_EVERY_MS = 580;
