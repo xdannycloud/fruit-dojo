@@ -255,15 +255,22 @@ h1 {
   position: absolute;
   z-index: 6;
   left: 50%;
-  top: 50%;
-  min-width: min(340px, calc(100% - 48px));
-  padding: 28px 32px 30px;
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  border-radius: 34px;
+  top: 47%;
+  width: clamp(156px, 24vw, 230px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
   background:
-    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.7) 58%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(234, 248, 255, 0.78));
-  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22), 0 0 52px rgba(14, 165, 233, 0.2);
+    radial-gradient(circle at 36% 24%, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.72) 34%, rgba(186, 230, 253, 0.78) 72%, rgba(14, 165, 233, 0.26)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(234, 248, 255, 0.82));
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22), 0 0 56px rgba(14, 165, 233, 0.24), inset 0 4px 14px rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+  display: grid;
+  place-items: center;
+  font-size: clamp(46px, 9vw, 82px);
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: -0.08em;
   text-align: center;
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -271,29 +278,13 @@ h1 {
   backdrop-filter: blur(18px);
 }
 
-.final-score-kicker {
-  margin: 0 0 8px;
-  color: var(--orange);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.final-score-card strong {
-  display: block;
-  color: #0f172a;
-  font-size: clamp(64px, 12vw, 116px);
-  line-height: 0.86;
-  letter-spacing: -0.08em;
-}
-
-.final-score-card span {
-  display: block;
-  margin-top: 14px;
-  color: rgba(23, 23, 23, 0.58);
-  font-size: 15px;
-  font-weight: 750;
+.final-score-orb::after {
+  content: '';
+  position: absolute;
+  inset: 14%;
+  border-radius: inherit;
+  background: radial-gradient(circle at 34% 20%, rgba(255, 255, 255, 0.8), transparent 34%);
+  pointer-events: none;
 }
 
 @keyframes final-score-pop {
@@ -368,11 +359,10 @@ h1 {
   }
   .hud span { font-size: 16px; }
   .final-score-card {
-    min-width: min(280px, calc(100% - 36px));
-    padding: 22px 24px 24px;
-    border-radius: 28px;
+    width: clamp(132px, 42vw, 178px);
+    top: 45%;
+    font-size: clamp(38px, 12vw, 64px);
   }
-  .final-score-card span { font-size: 13px; }
   .game-card { border-radius: 26px; }
 }
 

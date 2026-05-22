@@ -99,9 +99,11 @@ describe('Fruit Dojo', () => {
 
     await waitFor(() => expect(screen.getByTestId('game-state')).toHaveTextContent(/game over/i));
     const finalScore = screen.getByTestId('final-score');
-    expect(finalScore).toHaveTextContent(/final score/i);
-    expect(finalScore).toHaveTextContent('0');
+    expect(finalScore).toHaveTextContent(/^0$/);
+    expect(finalScore).not.toHaveTextContent(/final score/i);
+    expect(finalScore).not.toHaveTextContent(/nice slicing|dojo master/i);
     expect(finalScore).toHaveClass('final-score-card');
+    expect(finalScore).toHaveClass('final-score-orb');
     expect(finalScore.closest('.game-card')).not.toBeNull();
   });
 

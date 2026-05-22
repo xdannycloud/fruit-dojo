@@ -437,10 +437,8 @@ export default function App() {
         />
 
         {hud.status === 'game over' && (
-          <div className="final-score-card" data-testid="final-score" role="status" aria-live="polite">
-            <p className="final-score-kicker">Final Score</p>
-            <strong>{hud.score}</strong>
-            <span>{hud.score >= 900 ? 'Dojo master run ✨' : 'Nice slicing — run it back.'}</span>
+          <div className="final-score-card final-score-orb" data-testid="final-score" role="status" aria-live="polite">
+            {hud.score}
           </div>
         )}
 
