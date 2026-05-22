@@ -6,6 +6,14 @@ const MAX_TRAIL = 18;
 const GRAVITY = 0.33;
 const SPAWN_EVERY_MS = 580;
 
+async function requestGlobalPlays(options) {
+  const response = options ? await fetch('/api/plays', options) : await fetch('/api/plays');
+  if (!response.ok) throw new Error('Unable to load global plays');
+  const data = await response.json();
+  const plays = Number.parseInt(data?.plays ?? 0, 10);
+  return Number.isFinite(plays) && plays >= 0 ? plays : 0;
+}
+
 const createInitialHud = () => ({
   score: 0,
   combo: 1,
@@ -177,10 +185,33 @@ export default function App() {
   const pointerDownRef = useRef(false);
   const hudRef = useRef(createInitialHud());
   const [hud, setHud] = useState(createInitialHud);
+  const [plays, setPlays] = useState(0);
 
   const syncHud = useCallback((patch) => {
     hudRef.current = { ...hudRef.current, ...patch };
     setHud(hudRef.current);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    requestGlobalPlays()
+      .then((globalPlays) => {
+        if (!cancelled) setPlays(globalPlays);
+      })
+      .catch(() => {
+        if (!cancelled) setPlays(0);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const incrementGlobalPlays = useCallback(() => {
+    requestGlobalPlays({ method: 'POST' })
+      .then(setPlays)
+      .catch(() => setPlays((current) => current));
   }, []);
 
   const resetGame = useCallback(() => {
@@ -189,6 +220,7 @@ export default function App() {
     trailRef.current = [];
     spawnRef.current = 0;
     startedAtRef.current = performance.now();
+    incrementGlobalPlays();
     syncHud({
       score: 0,
       combo: 1,
@@ -197,7 +229,7 @@ export default function App() {
       status: 'playing',
       message: 'Go! Slice through fruit for combos.',
     });
-  }, [syncHud]);
+  }, [incrementGlobalPlays, syncHud]);
 
   const spawnBurst = useCallback((target, amount = 12) => {
     const particles = Array.from({ length: amount }, (_, index) => {
@@ -380,6 +412,7 @@ export default function App() {
           <div data-testid="combo"><strong>Combo</strong><span>x{Math.max(1, hud.combo - 1)}</span></div>
           <div data-testid="timer"><strong>Time</strong><span>{hud.timeLeft}s</span></div>
           <div data-testid="lives"><strong>Lives</strong><span>{'❤️'.repeat(hud.lives) || '—'}</span></div>
+          <div data-testid="plays"><strong>Games Played</strong><span>{plays}</span></div>
         </div>
 
         <canvas
@@ -403,7 +436,7 @@ export default function App() {
             {hud.status}
           </span>
           <p>{hud.message}</p>
-          {!isPlaying && <p className="hint">点击 Start Game，然后按住鼠标/手指划过水果。</p>}
+          {!isPlaying && <p className="hint">点击 Start Game，移动鼠标/手指挥刀切水果。</p>}
         </div>
       </section>
     </div>

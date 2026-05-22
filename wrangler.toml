@@ -1,0 +1,7 @@
+name = "fruit-dojo"
+compatibility_date = "2026-05-21"
+pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "FRUIT_DOJO_KV"
+id = "dbfd4147f9524a1c92bf444f2989b9b7"

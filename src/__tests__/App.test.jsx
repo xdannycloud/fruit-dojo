@@ -1,34 +1,71 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../App.jsx';
 
 describe('Fruit Dojo', () => {
-  it('renders the game title and canvas', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+    global.fetch = vi.fn(async (url, options = {}) => {
+      if (url === '/api/plays' && options.method === 'POST') {
+        return { ok: true, json: async () => ({ plays: 43 }) };
+      }
+      if (url === '/api/plays') {
+        return { ok: true, json: async () => ({ plays: 42 }) };
+      }
+      throw new Error(`Unexpected fetch: ${url}`);
+    });
+  });
+
+  it('renders the game title and canvas', async () => {
     render(<App />);
 
     expect(
       screen.getByRole('heading', { name: /fruit dojo/i })
     ).toBeInTheDocument();
     expect(screen.getByTestId('slash-canvas')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
   });
 
-  it('starts the game from the start button', () => {
+  it('starts the game from the start button', async () => {
     render(<App />);
 
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
     fireEvent.click(screen.getByRole('button', { name: /start game/i }));
 
     expect(screen.getByTestId('game-state')).toHaveTextContent(/playing/i);
     expect(screen.getByRole('button', { name: /restart/i })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('43'));
   });
 
-  it('shows score, combo, timer, and lives HUD', () => {
+  it('loads global games played count from the backend on render', async () => {
+    render(<App />);
+
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
+    expect(global.fetch).toHaveBeenCalledWith('/api/plays');
+  });
+
+  it('increments global games played count through the backend when starting', async () => {
+    render(<App />);
+
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
+
+    fireEvent.click(screen.getByRole('button', { name: /start game/i }));
+
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('43'));
+    expect(global.fetch).toHaveBeenCalledWith('/api/plays', { method: 'POST' });
+    expect(window.localStorage.getItem('fruit-dojo:plays')).toBeNull();
+  });
+
+  it('shows score, combo, timer, and lives HUD', async () => {
     render(<App />);
 
     expect(screen.getByTestId('score')).toHaveTextContent(/score/i);
     expect(screen.getByTestId('combo')).toHaveTextContent(/combo/i);
     expect(screen.getByTestId('timer')).toHaveTextContent(/time/i);
     expect(screen.getByTestId('lives')).toHaveTextContent(/lives/i);
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
   });
 
   it('supports deterministic fruit spawning helper', async () => {
@@ -84,9 +121,10 @@ describe('Fruit Dojo', () => {
     expect(slashHitsTarget([{ x: 10, y: 10 }], target)).toBe(false);
   });
 
-  it('cancels animation frame on unmount', () => {
+  it('cancels animation frame on unmount', async () => {
     const cancel = vi.spyOn(window, 'cancelAnimationFrame');
     const { unmount } = render(<App />);
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
     unmount();
     expect(cancel).toHaveBeenCalled();
     cancel.mockRestore();
