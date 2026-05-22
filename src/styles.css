@@ -39,10 +39,10 @@ canvas {
   width: min(1180px, calc(100vw - 36px));
   height: 100vh;
   margin: 0 auto;
-  padding: 24px 0 28px;
+  padding: 18px 0 24px;
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: 18px;
+  gap: 6px;
 }
 
 .game-header {
@@ -78,7 +78,7 @@ h1 {
 }
 
 .subtitle {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   max-width: 620px;
   color: var(--muted);
   font-size: 15px;
@@ -257,8 +257,8 @@ h1 {
     width: min(100vw - 20px, 640px);
     min-height: 100vh;
     height: 100dvh;
-    padding: 14px 0;
-    gap: 12px;
+    padding: 8px 0 10px;
+    gap: 4px;
   }
   .game-header {
     align-items: start;
@@ -266,6 +266,12 @@ h1 {
     gap: 12px;
   }
   .game-header > div:first-child { min-width: 0; }
+  .eyebrow { margin-bottom: 2px; }
+  .subtitle {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.25;
+  }
   .header-actions {
     align-items: flex-end;
     flex-direction: column;
