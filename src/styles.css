@@ -285,7 +285,7 @@ h1 {
   }
   .hud {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    top: 68px;
+    top: 12px;
     left: 12px;
     right: 12px;
   }
