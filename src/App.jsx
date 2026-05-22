@@ -436,6 +436,14 @@ export default function App() {
           aria-label="Slice fruit by moving the katana cursor across the canvas"
         />
 
+        {hud.status === 'game over' && (
+          <div className="final-score-card" data-testid="final-score" role="status" aria-live="polite">
+            <p className="final-score-kicker">Final Score</p>
+            <strong>{hud.score}</strong>
+            <span>{hud.score >= 900 ? 'Dojo master run ✨' : 'Nice slicing — run it back.'}</span>
+          </div>
+        )}
+
         <div className="game-overlay" aria-live="polite">
           <span className={`state state--${hud.status.replace(' ', '-')}`} data-testid="game-state">
             {hud.status}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import App from '../App.jsx';
 
 describe('Fruit Dojo', () => {
@@ -79,6 +79,30 @@ describe('Fruit Dojo', () => {
     expect(screen.getByTestId('timer')).toHaveTextContent('15s');
     expect(screen.getByTestId('lives')).toHaveTextContent(/lives/i);
     await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
+  });
+
+  it('shows an animated centered final score panel when the game ends', async () => {
+    let tick;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      tick = callback;
+      return 1;
+    });
+
+    render(<App />);
+
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
+    fireEvent.click(screen.getByRole('button', { name: /start game/i }));
+
+    act(() => {
+      tick(performance.now() + 16_000);
+    });
+
+    await waitFor(() => expect(screen.getByTestId('game-state')).toHaveTextContent(/game over/i));
+    const finalScore = screen.getByTestId('final-score');
+    expect(finalScore).toHaveTextContent(/final score/i);
+    expect(finalScore).toHaveTextContent('0');
+    expect(finalScore).toHaveClass('final-score-card');
+    expect(finalScore.closest('.game-card')).not.toBeNull();
   });
 
   it('supports deterministic fruit spawning helper', async () => {
