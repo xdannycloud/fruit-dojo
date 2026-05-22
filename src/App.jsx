@@ -401,17 +401,18 @@ export default function App() {
           <h1>Fruit Dojo</h1>
           <p className="subtitle">挥动武士刀切水果、躲炸弹、叠 combo，适合直接分享试玩。</p>
         </div>
-        <button className="primary-button" type="button" onClick={resetGame}>
-          {isPlaying ? 'Restart' : 'Start Game'}
-        </button>
+        <div className="header-actions">
+          <div className="play-counter" data-testid="plays" aria-label="Global games played">
+            <strong>Games Played</strong>
+            <span>{plays}</span>
+          </div>
+          <button className="primary-button" type="button" onClick={resetGame}>
+            {isPlaying ? 'Restart' : 'Start Game'}
+          </button>
+        </div>
       </header>
 
       <section className="game-card" aria-label="Fruit Dojo game area">
-        <div className="play-counter" data-testid="plays" aria-label="Global games played">
-          <strong>Games Played</strong>
-          <span>{plays}</span>
-        </div>
-
         <div className="hud">
           <div data-testid="score"><strong>Score</strong><span>{hud.score}</span></div>
           <div data-testid="combo"><strong>Combo</strong><span>x{Math.max(1, hud.combo - 1)}</span></div>
