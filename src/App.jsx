@@ -415,7 +415,7 @@ export default function App() {
       <section className="game-card" aria-label="Fruit Dojo game area">
         <div className="hud">
           <div data-testid="score"><strong>Score</strong><span>{hud.score}</span></div>
-          <div data-testid="combo"><strong>Combo</strong><span>x{Math.max(1, hud.combo - 1)}</span></div>
+          <div data-testid="combo"><strong>Combo</strong><span>x{Math.min(5, Math.max(1, hud.combo))}</span></div>
           <div data-testid="timer"><strong>Time</strong><span>{hud.timeLeft}s</span></div>
           <div data-testid="lives"><strong>Lives</strong><span>{'❤️'.repeat(hud.lives) || '—'}</span></div>
         </div>
