@@ -50,14 +50,14 @@ function drawTrail(ctx, trail) {
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(14, 165, 233, 0.6)';
+  ctx.shadowBlur = 18;
   for (let i = 1; i < trail.length; i += 1) {
     const prev = trail[i - 1];
     const point = trail[i];
     const alpha = i / trail.length;
     ctx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.82})`;
     ctx.lineWidth = 4 + alpha * 12;
-    ctx.shadowColor = 'rgba(14, 165, 233, 0.6)';
-    ctx.shadowBlur = 18;
     ctx.beginPath();
     ctx.moveTo(prev.x, prev.y);
     ctx.lineTo(point.x, point.y);
@@ -183,6 +183,7 @@ export default function App() {
   const trailRef = useRef([]);
   const swordRef = useRef(null);
   const pointerDownRef = useRef(false);
+  const metricsRef = useRef({ width: 0, height: 0, ratio: 1 });
   const hudRef = useRef(createInitialHud());
   const [hud, setHud] = useState(createInitialHud);
   const [plays, setPlays] = useState(0);
@@ -307,6 +308,33 @@ export default function App() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+
+    const measure = () => {
+      const rect = canvas.getBoundingClientRect();
+      metricsRef.current = {
+        width: rect.width,
+        height: rect.height,
+        ratio: Math.min(2, window.devicePixelRatio || 1),
+      };
+    };
+
+    measure();
+    window.addEventListener('resize', measure);
+    let observer;
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(measure);
+      observer.observe(canvas);
+    }
+
+    return () => {
+      window.removeEventListener('resize', measure);
+      observer?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
     const ctx = canvas?.getContext?.('2d');
 
     const tick = (now) => {
@@ -314,17 +342,16 @@ export default function App() {
       lastTimeRef.current = now;
 
       if (canvas && ctx) {
-        const deviceRatio = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        const nextWidth = Math.max(320, Math.floor(rect.width * deviceRatio));
-        const nextHeight = Math.max(320, Math.floor(rect.height * deviceRatio));
+        const { width, height, ratio } = metricsRef.current;
+        const nextWidth = Math.max(320, Math.floor(width * ratio));
+        const nextHeight = Math.max(320, Math.floor(height * ratio));
         if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
           canvas.width = nextWidth;
           canvas.height = nextHeight;
         }
 
-        ctx.setTransform(deviceRatio, 0, 0, deviceRatio, 0, 0);
-        drawBackground(ctx, rect.width, rect.height);
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        drawBackground(ctx, width, height);
 
         if (hudRef.current.status === 'playing') {
           const elapsed = (now - startedAtRef.current) / 1000;
@@ -339,44 +366,47 @@ export default function App() {
             const shouldBomb = Math.random() > 0.82;
             targetsRef.current.push(
               shouldBomb
-                ? createBomb(randomValue, rect.width, rect.height)
-                : createFruit(randomValue, rect.width, rect.height)
+                ? createBomb(randomValue, width, height)
+                : createFruit(randomValue, width, height)
             );
           }
         }
 
-        targetsRef.current = targetsRef.current
-          .map((target) => ({
-            ...target,
-            x: target.x + target.vx,
-            y: target.y + target.vy,
-            vy: target.vy + GRAVITY,
-            rotation: target.rotation + target.spin,
-          }))
-          .filter((target) => {
-            const missed = target.kind === 'fruit' && target.y > rect.height + 70 && !target.sliced;
-            if (missed && hudRef.current.status === 'playing') {
-              syncHud({
-                combo: 1,
-                message: 'Fruit escaped. Combo reset — keep slicing.',
-              });
-            }
-            return target.y < rect.height + 95 && target.x > -100 && target.x < rect.width + 100;
-          });
+        const targets = targetsRef.current;
+        for (let i = targets.length - 1; i >= 0; i -= 1) {
+          const target = targets[i];
+          target.x += target.vx;
+          target.y += target.vy;
+          target.vy += GRAVITY;
+          target.rotation += target.spin;
 
-        particlesRef.current = particlesRef.current
-          .map((particle) => ({
-            ...particle,
-            x: particle.x + particle.vx,
-            y: particle.y + particle.vy,
-            vy: particle.vy + 0.12,
-            life: particle.life - 1,
-          }))
-          .filter((particle) => particle.life > 0);
+          const missed = target.kind === 'fruit' && target.y > height + 70 && !target.sliced;
+          if (missed && hudRef.current.status === 'playing' && hudRef.current.combo !== 1) {
+            syncHud({
+              combo: 1,
+              message: 'Fruit escaped. Combo reset — keep slicing.',
+            });
+          }
+          if (!(target.y < height + 95 && target.x > -100 && target.x < width + 100)) {
+            targets.splice(i, 1);
+          }
+        }
 
-        trailRef.current = trailRef.current
-          .map((point) => ({ ...point, age: point.age + 1 }))
-          .filter((point) => point.age < 16);
+        const particles = particlesRef.current;
+        for (let i = particles.length - 1; i >= 0; i -= 1) {
+          const particle = particles[i];
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+          particle.vy += 0.12;
+          particle.life -= 1;
+          if (particle.life <= 0) particles.splice(i, 1);
+        }
+
+        const trail = trailRef.current;
+        for (let i = trail.length - 1; i >= 0; i -= 1) {
+          trail[i].age += 1;
+          if (trail[i].age >= 16) trail.splice(i, 1);
+        }
 
         targetsRef.current.forEach((target) => drawTarget(ctx, target));
         drawParticles(ctx, particlesRef.current);
