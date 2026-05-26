@@ -48,6 +48,7 @@ export function createFruit(randomValue = Math.random(), width = 800, height = 6
 
 export function createBomb(randomValue = Math.random(), width = 800, height = 600) {
   const safeWidth = Math.max(width, 320);
+  const safeHeight = Math.max(height, 320);
   const { margin, spawnWidth } = spawnRange(safeWidth);
   return {
     id: nextId++,
@@ -58,7 +59,7 @@ export function createBomb(randomValue = Math.random(), width = 800, height = 60
     juice: '#f97316',
     points: -50,
     x: margin + randomValue * spawnWidth,
-    y: height + 54,
+    y: safeHeight + 54,
     vx: (randomValue - 0.5) * 6,
     vy: -(12 + randomValue * 4),
     radius: 32,
