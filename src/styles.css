@@ -237,6 +237,7 @@ h1 {
 }
 
 .state--playing { background: linear-gradient(135deg, #16a34a, #0ea5e9); }
+.state--paused { background: linear-gradient(135deg, #f59e0b, #f97316); }
 .state--game-over { background: linear-gradient(135deg, #ef4444, #f97316); }
 
 .game-overlay p {

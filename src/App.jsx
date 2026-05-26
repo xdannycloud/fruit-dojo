@@ -178,6 +178,7 @@ export default function App() {
   const lastTimeRef = useRef(0);
   const spawnRef = useRef(0);
   const startedAtRef = useRef(0);
+  const pausedAtRef = useRef(0);
   const targetsRef = useRef([]);
   const particlesRef = useRef([]);
   const trailRef = useRef([]);
@@ -231,6 +232,16 @@ export default function App() {
       message: 'Go! Slice through fruit for combos.',
     });
   }, [incrementGlobalPlays, syncHud]);
+
+  const togglePause = useCallback(() => {
+    if (hudRef.current.status === 'playing') {
+      pausedAtRef.current = performance.now();
+      syncHud({ status: 'paused', message: 'Paused. Resume when you are ready.' });
+    } else if (hudRef.current.status === 'paused') {
+      startedAtRef.current += performance.now() - pausedAtRef.current;
+      syncHud({ status: 'playing', message: 'Back in! Keep the combo alive.' });
+    }
+  }, [syncHud]);
 
   const spawnBurst = useCallback((target, amount = 12) => {
     const particles = Array.from({ length: amount }, (_, index) => {
@@ -372,34 +383,36 @@ export default function App() {
           }
         }
 
-        const targets = targetsRef.current;
-        for (let i = targets.length - 1; i >= 0; i -= 1) {
-          const target = targets[i];
-          target.x += target.vx;
-          target.y += target.vy;
-          target.vy += GRAVITY;
-          target.rotation += target.spin;
+        if (hudRef.current.status !== 'paused') {
+          const targets = targetsRef.current;
+          for (let i = targets.length - 1; i >= 0; i -= 1) {
+            const target = targets[i];
+            target.x += target.vx;
+            target.y += target.vy;
+            target.vy += GRAVITY;
+            target.rotation += target.spin;
 
-          const missed = target.kind === 'fruit' && target.y > height + 70 && !target.sliced;
-          if (missed && hudRef.current.status === 'playing' && hudRef.current.combo !== 1) {
-            syncHud({
-              combo: 1,
-              message: 'Fruit escaped. Combo reset — keep slicing.',
-            });
+            const missed = target.kind === 'fruit' && target.y > height + 70 && !target.sliced;
+            if (missed && hudRef.current.status === 'playing' && hudRef.current.combo !== 1) {
+              syncHud({
+                combo: 1,
+                message: 'Fruit escaped. Combo reset — keep slicing.',
+              });
+            }
+            if (!(target.y < height + 95 && target.x > -100 && target.x < width + 100)) {
+              targets.splice(i, 1);
+            }
           }
-          if (!(target.y < height + 95 && target.x > -100 && target.x < width + 100)) {
-            targets.splice(i, 1);
-          }
-        }
 
-        const particles = particlesRef.current;
-        for (let i = particles.length - 1; i >= 0; i -= 1) {
-          const particle = particles[i];
-          particle.x += particle.vx;
-          particle.y += particle.vy;
-          particle.vy += 0.12;
-          particle.life -= 1;
-          if (particle.life <= 0) particles.splice(i, 1);
+          const particles = particlesRef.current;
+          for (let i = particles.length - 1; i >= 0; i -= 1) {
+            const particle = particles[i];
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            particle.vy += 0.12;
+            particle.life -= 1;
+            if (particle.life <= 0) particles.splice(i, 1);
+          }
         }
 
         const trail = trailRef.current;
@@ -421,8 +434,6 @@ export default function App() {
     return () => window.cancelAnimationFrame(animationRef.current);
   }, [syncHud]);
 
-  const isPlaying = hud.status === 'playing';
-
   return (
     <div className="game-shell">
       <header className="game-header">
@@ -436,9 +447,15 @@ export default function App() {
             <strong>Games Played</strong>
             <span>{plays}</span>
           </div>
-          <button className="primary-button" type="button" onClick={resetGame}>
-            {isPlaying ? 'Restart' : 'Start Game'}
-          </button>
+          {hud.status === 'playing' || hud.status === 'paused' ? (
+            <button className="primary-button" type="button" onClick={togglePause}>
+              {hud.status === 'paused' ? 'Resume' : 'Pause'}
+            </button>
+          ) : (
+            <button className="primary-button" type="button" onClick={resetGame}>
+              {hud.status === 'game over' ? 'Play Again' : 'Start Game'}
+            </button>
+          )}
         </div>
       </header>
 
@@ -477,7 +494,9 @@ export default function App() {
             {hud.status}
           </span>
           <p>{hud.message}</p>
-          {!isPlaying && <p className="hint">点击 Start Game，移动鼠标/手指挥刀切水果。</p>}
+          {hud.status !== 'playing' && hud.status !== 'paused' && (
+            <p className="hint">点击 Start Game，移动鼠标/手指挥刀切水果。</p>
+          )}
         </div>
       </section>
     </div>

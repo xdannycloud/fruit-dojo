@@ -40,8 +40,22 @@ describe('Fruit Dojo', () => {
     fireEvent.click(screen.getByRole('button', { name: /start game/i }));
 
     expect(screen.getByTestId('game-state')).toHaveTextContent(/playing/i);
-    expect(screen.getByRole('button', { name: /restart/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('43'));
+  });
+
+  it('pauses and resumes the game from the primary button', async () => {
+    render(<App />);
+
+    await waitFor(() => expect(screen.getByTestId('plays')).toHaveTextContent('42'));
+    fireEvent.click(screen.getByRole('button', { name: /start game/i }));
+
+    fireEvent.click(screen.getByRole('button', { name: /pause/i }));
+    expect(screen.getByTestId('game-state')).toHaveTextContent(/paused/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /resume/i }));
+    expect(screen.getByTestId('game-state')).toHaveTextContent(/playing/i);
+    expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument();
   });
 
   it('loads global games played count from the backend on render', async () => {
