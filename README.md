@@ -13,3 +13,18 @@ npm test         # run the vitest suite
 npm run lint     # eslint
 npm run build    # production build
 ```
+
+## Deploy to Cloudflare Pages
+
+This project is configured for Cloudflare Pages with `wrangler.toml`:
+
+- project name: `fruit-dojo`
+- build output: `dist`
+- Pages Function: `functions/api/plays.js`
+- KV binding: `FRUIT_DOJO_KV`
+
+Deploy with:
+
+```bash
+npm run deploy
+```
